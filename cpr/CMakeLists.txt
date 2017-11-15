@@ -1,5 +1,3 @@
-message(STATUS "Using CURL_INCLUDE_DIRS: ${CURL_INCLUDE_DIRS}.")
-
 add_library(${CPR_LIBRARIES}
 
     # Source files
@@ -39,17 +37,20 @@ add_library(${CPR_LIBRARIES}
     "${CPR_INCLUDE_DIRS}/cpr/util.h"
     "${CPR_INCLUDE_DIRS}/cpr/ssl_options.h")
 
-message(STATUS "Using CURL_LIBRARIES: ${CURL_LIBRARIES}.")
-target_link_libraries(${CPR_LIBRARIES}
-    ${CURL_LIBRARIES})
+target_include_directories(${CPR_LIBRARIES}
+  PUBLIC
+  $<BUILD_INTERFACE:${CPR_INCLUDE_DIRS}>
+)
 
-if(NOT (CMAKE_VERSION VERSION_LESS 3.0))
-    target_include_directories(${CPR_LIBRARIES}
-        PUBLIC
-        ${CPR_INCLUDE_DIRS}
-        ${CURL_INCLUDE_DIRS})
-else()
-    include_directories(
-        ${CPR_INCLUDE_DIRS}
-        ${CURL_INCLUDE_DIRS})
-endif()
+target_link_libraries(${CPR_LIBRARIES}
+    CURL::libcurl
+    $<$<BOOL:${WIN32}>:crypt32>)
+
+install(
+    TARGETS ${CPR_LIBRARIES}
+    EXPORT "${targets_export_name}"
+    LIBRARY DESTINATION "lib"
+    ARCHIVE DESTINATION "lib"
+    RUNTIME DESTINATION "bin"
+    INCLUDES DESTINATION "${include_install_dir}" 
+)

@@ -7,7 +7,7 @@
 #include <sstream>
 #include <thread>
 
-#include "mongoose.h"
+#include <mongoose/mongoose.h>
 
 #include <time.h>
 

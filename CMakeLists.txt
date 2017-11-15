@@ -5,12 +5,19 @@ if(POLICY CMP0048)
     cmake_policy(SET CMP0048 NEW)
 endif()
 
+include(cmake/HunterGate.cmake)
+HunterGate(
+    URL "https://github.com/ruslo/hunter/archive/v0.19.154.tar.gz"
+    SHA1 "f86a59e0cf169e2d9f765f63708c25628b288c12"
+    LOCAL
+)
+
 # Allow use of project folders for IDEs like Visual Studio, so we
 # could organize projects into relevant folders: "cpr", "tests" & "external (libraries)".
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 set_property(GLOBAL PROPERTY PREDEFINED_TARGETS_FOLDER "CMake")
 
-project(cpr CXX)
+project(cpr LANGUAGES CXX C VERSION 1.3.0)
 
 if(NOT ${CMAKE_VERSION} LESS 3.2)
     set(CMAKE_CXX_STANDARD 11)
@@ -74,8 +81,54 @@ if(BUILD_CPR_TESTS)
     enable_testing()
 endif()
 
+if(HUNTER_ENABLED)
+    hunter_add_package(CURL)
+    find_package(CURL CONFIG REQUIRED)
+    if(BUILD_CPR_TESTS)
+        hunter_add_package(GTest)
+        find_package(GTest CONFIG REQUIRED)
+        hunter_add_package(mongoose)
+        find_package(mongoose CONFIG REQUIRED)
+    endif()
+endif()
+
+set(generated_dir "${CMAKE_CURRENT_BINARY_DIR}/generated")
+
+set(config_install_dir "lib/cmake/${PROJECT_NAME}")
+set(include_install_dir "include")
+
+set(version_config "${generated_dir}/${PROJECT_NAME}ConfigVersion.cmake")
+set(project_config "${generated_dir}/${PROJECT_NAME}Config.cmake")
+set(targets_export_name "${PROJECT_NAME}Targets")
+set(namespace "${PROJECT_NAME}::")
+
 add_subdirectory(opt)
 add_subdirectory(cpr)
 if(BUILD_CPR_TESTS)
     add_subdirectory(test)
 endif()
+
+### Install ###
+include(CMakePackageConfigHelpers)
+write_basic_package_version_file(
+    "${version_config}" COMPATIBILITY SameMajorVersion
+)
+
+# Note: use 'targets_export_name'
+configure_file("cmake/Config.cmake.in" "${project_config}" @ONLY)
+
+install(
+  DIRECTORY include/cpr
+  DESTINATION "${include_install_dir}"
+)
+
+install(
+    FILES "${project_config}" "${version_config}"
+    DESTINATION "${config_install_dir}"
+)
+
+install(
+    EXPORT "${targets_export_name}"
+    NAMESPACE "${namespace}"
+    DESTINATION "${config_install_dir}"
+)
