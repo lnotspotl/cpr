@@ -13,6 +13,7 @@ add_library(${CPR_LIBRARIES}
     session.cpp
     timeout.cpp
     util.cpp
+    unix_socket.cpp
     ssl_options.cpp
 
     # Header files (useful in IDEs)
@@ -35,7 +36,10 @@ add_library(${CPR_LIBRARIES}
     "${CPR_INCLUDE_DIRS}/cpr/session.h"
     "${CPR_INCLUDE_DIRS}/cpr/timeout.h"
     "${CPR_INCLUDE_DIRS}/cpr/util.h"
-    "${CPR_INCLUDE_DIRS}/cpr/ssl_options.h")
+    "${CPR_INCLUDE_DIRS}/cpr/ssl_options.h"
+    "${CPR_INCLUDE_DIRS}/cpr/limit_rate.h"
+    "${CPR_INCLUDE_DIRS}/cpr/verbose.h"
+    "${CPR_INCLUDE_DIRS}/cpr/unix_socket.h")
 
 target_include_directories(${CPR_LIBRARIES}
   PUBLIC
@@ -52,5 +56,11 @@ install(
     LIBRARY DESTINATION "lib"
     ARCHIVE DESTINATION "lib"
     RUNTIME DESTINATION "bin"
-    INCLUDES DESTINATION "${include_install_dir}" 
+    INCLUDES DESTINATION "${include_install_dir}"
 )
+
+# Set version for shared libraries.
+set_target_properties(${CPR_LIBRARIES}
+     PROPERTIES
+     VERSION ${${PROJECT_NAME}_VERSION}
+     SOVERSION ${${PROJECT_NAME}_VERSION_MAJOR})
