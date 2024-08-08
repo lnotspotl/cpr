@@ -84,20 +84,35 @@ Session::Impl::Impl() {
         curl_easy_setopt(curl, CURLOPT_MAXREDIRS, 50L);
         curl_easy_setopt(curl, CURLOPT_ERRORBUFFER, curl_->error);
         curl_easy_setopt(curl, CURLOPT_COOKIEFILE, "");
+        
 #ifdef __linux__
-        // list of possible paths:
-        // https://github.com/cpp-pm/curl/blob/25d45e89d140d6ab27103cd7f8f6d7d6cf548d47/CMakeLists.txt#L919
-        static constexpr const char* certificatePaths[] = {
-                "/etc/ssl/certs/ca-certificates.crt", "/etc/pki/tls/certs/ca-bundle.crt",
-                "/usr/share/ssl/certs/ca-bundle.crt", "/usr/local/share/certs/ca-root-nss.crt",
-                "/etc/ssl/cert.pem"};
 
-        for (const auto& path : certificatePaths) {
-            if (std::filesystem::exists(path)) {
-                curl_easy_setopt(curl, CURLOPT_CAINFO, path);
-                break;
+        static bool found = false;
+        static const char* cert_path = nullptr;
+
+        // Find the system certificate store
+        if (!found) {
+            // List of possible paths:
+            // https://github.com/cpp-pm/curl/blob/25d45e89d140d6ab27103cd7f8f6d7d6cf548d47/CMakeLists.txt#L919
+            static constexpr const char* certificatePaths[] = {
+                    "/etc/ssl/certs/ca-certificates.crt", "/etc/pki/tls/certs/ca-bundle.crt",
+                    "/usr/share/ssl/certs/ca-bundle.crt", "/usr/local/share/certs/ca-root-nss.crt",
+                    "/etc/ssl/cert.pem"};
+
+            for (const auto& path : certificatePaths) {
+                if (std::filesystem::exists(path)) {
+                    found = true;
+                    cert_path = path;
+                    break;
+                }
             }
         }
+
+        // Set certificate path
+        if (cert_path != nullptr) {
+            curl_easy_setopt(curl, CURLOPT_CAINFO, cert_path);
+        }
+
 #endif
 
 #ifdef CPR_CURL_NOSIGNAL
