@@ -94,7 +94,6 @@ Session::Impl::Impl() {
 
         for (const auto& path : certificatePaths) {
             if (std::filesystem::exists(path)) {
-                curl_easy_setopt(curl, CURLOPT_SSLCERT, path);
                 curl_easy_setopt(curl, CURLOPT_CAINFO, path);
                 break;
             }
