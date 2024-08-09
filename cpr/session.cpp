@@ -87,11 +87,10 @@ Session::Impl::Impl() {
 
 #ifdef __linux__
 
-        static bool found = false;
         static const char* cert_path = nullptr;
 
         // Find the system certificate store
-        if (!found) {
+        if (cert_path == nullptr) {
             // List of possible paths:
             // https://github.com/cpp-pm/curl/blob/25d45e89d140d6ab27103cd7f8f6d7d6cf548d47/CMakeLists.txt#L919
             static constexpr const char* certificatePaths[] = {
@@ -101,7 +100,6 @@ Session::Impl::Impl() {
 
             for (const auto& path : certificatePaths) {
                 if (std::filesystem::exists(path)) {
-                    found = true;
                     cert_path = path;
                     break;
                 }
