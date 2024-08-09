@@ -84,7 +84,7 @@ Session::Impl::Impl() {
         curl_easy_setopt(curl, CURLOPT_MAXREDIRS, 50L);
         curl_easy_setopt(curl, CURLOPT_ERRORBUFFER, curl_->error);
         curl_easy_setopt(curl, CURLOPT_COOKIEFILE, "");
-        
+
 #ifdef __linux__
 
         static bool found = false;
@@ -510,12 +510,7 @@ Response Session::Impl::makeDownloadRequest(CURL* curl, std::ofstream& file) {
 
     auto header = cpr::util::parseHeader(header_string);
     return Response{static_cast<std::int32_t>(response_code),
-                    std::string{},
-                    header,
-                    raw_url,
-                    elapsed,
-                    cookies,
-                    error};
+        std::string{}, header, raw_url, elapsed, cookies, error};
 }
 
 Response Session::Impl::makeRequest(CURL* curl) {
@@ -535,8 +530,8 @@ Response Session::Impl::makeRequest(CURL* curl) {
 
 #if LIBCURL_VERSION_MAJOR >= 7
 #if LIBCURL_VERSION_MINOR >= 21
-    /* enable all supported built-in compressions */
-    curl_easy_setopt(curl, CURLOPT_ACCEPT_ENCODING, "");
+        /* enable all supported built-in compressions */
+        curl_easy_setopt(curl, CURLOPT_ACCEPT_ENCODING, "");
 #endif
 #endif
 
